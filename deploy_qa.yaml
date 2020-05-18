@@ -1,0 +1,71 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ms-demo-test-$BUILD_ID
+  namespace: demo-qa
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ms-demo-$BUILD_ID
+    spec:
+      containers:
+      - name: ms-demo-$BUILD_ID
+        image: k8s-master:31002/roneymis/ms-demo:master-$COMMIT_ID
+        ports:
+        - containerPort: 8080
+      imagePullSecrets:
+      - name: local-nexus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-demo-qa-$BUILD_ID
+  labels:
+    name: ms-demo-qa-$BUILD_ID
+  namespace: demo-qa
+spec:
+  type: LoadBalancer
+  ports:
+    # the port that this service should serve on
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: ms-demo-$BUILD_ID
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ms-demo-test-$BUILD_ID
+  namespace: demo-pt
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: ms-demo-$BUILD_ID
+    spec:
+      containers:
+      - name: ms-demo-$COMMIT_ID
+        image: k8s-master:31002/roneymis/ms-demo:master-$COMMIT_ID
+        ports:
+        - containerPort: 8080
+      imagePullSecrets:
+      - name: local-nexus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-demo-pt-$BUILD_ID
+  labels:
+    name: ms-demo-pt-$BUILD_ID
+  namespace: demo-pt
+spec:
+  type: LoadBalancer
+  ports:
+    # the port that this service should serve on
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: ms-demo-$BUILD_ID

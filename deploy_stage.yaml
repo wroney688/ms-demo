@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ms-demo-master
+  namespace: demo-stage
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ms-demo-master-latest
+    spec:
+      containers:
+      - name: ms-demo-master
+        image: k8s-master:31002/roneymis/ms-demo:master-latest
+        ports:
+        - containerPort: 8080
+      imagePullSecrets:
+      - name: local-nexus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-demo-stage
+  labels:
+    name: ms-demo-stage
+  namespace: demo-stage
+spec:
+  type: NodePort
+  ports:
+    # the port that this service should serve on
+  - port: 8080
+    targetPort: 8080
+    nodePort: 31080
+  selector:
+    app: ms-demo-master-latest

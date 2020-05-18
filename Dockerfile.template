@@ -1,0 +1,24 @@
+FROM java:8
+
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
+ARG MVN_ARGS
+
+#install maven
+RUN apt-get update
+RUN apt-get install -y maven git
+
+WORKDIR /tmp
+RUN ["git", "clone", "http://k8s-master:30001/demo/ms-demo"]
+
+WORKDIR /tmp/ms-demo
+RUN mvn clean package $MVN_ARGS
+
+FROM java:8
+
+WORKDIR target
+COPY --from=0 /tmp/ms-demo/target/HelloworldApplication-roneymis-0.0.1-SNAPSHOT.jar HelloworldApplication-roneymis-0.0.1-SNAPSHOT.jar
+EXPOSE 8080
+ENTRYPOINT ["java"]
+CMD ["-jar", "HelloworldApplication-roneymis-0.0.1-SNAPSHOT.jar"]
